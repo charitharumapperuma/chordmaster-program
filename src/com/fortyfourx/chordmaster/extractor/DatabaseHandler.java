@@ -10,6 +10,11 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import com.fortyfourx.entity.Artist;
+import com.fortyfourx.entity.Error;
+import com.fortyfourx.entity.Song;
+import com.fortyfourx.entity.URL;
+
 public class DatabaseHandler {
 	public static final String DRIVER = "com.mysql.jdbc.Driver";
 

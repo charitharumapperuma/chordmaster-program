@@ -17,6 +17,9 @@ import org.openqa.selenium.TakesScreenshot;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 
+import com.fortyfourx.entity.Artist;
+import com.fortyfourx.entity.Song;
+
 /**
  * @author Charith Arumapperuma
  * <p>
