@@ -19,7 +19,11 @@ import org.openqa.selenium.WebElement;
 
 /**
  * @author Charith Arumapperuma
- *
+ * <p>
+ * Handles all data manipulaition tasks done for web sites. 
+ * Reading web site content, taking screenshots and passing these data to DatabaseHandler 
+ * to store are done here. 
+ * <p>
  * <i>Error logging example - http://stackoverflow.com/questions/14606293/java-logging-exceptions-how-to-log-as-much-information-as-possible</i>
  * <i>Element screenshots example - http://stackoverflow.com/questions/13832322/how-to-capture-the-screenshot-of-only-a-specific-element-using-selenium-webdrive</i>
  * */
@@ -36,6 +40,10 @@ public class Scraper implements Runnable {
 		"#sinhala_display",
 		"#song_display_tabs > p.songs_lyrics"
 	};
+
+	public static final int URL_STATUS_NONE = 0;
+	public static final int URL_STATUS_DATABASE = 1;
+	public static final int URL_STATUS_ALL = 2;
 	
 	private WebDriver driver;
 	private DatabaseHandler dbhandler;
@@ -207,7 +215,8 @@ public class Scraper implements Runnable {
 	 * @see Artist
 	 */
 	public void readSong() {
-		int status = 0; // 0=nothing, 1=text, 2=text+details image, 3=text+details image+lyrics image
+		// 0=nothing, 1=database, 2=all
+		int status = Scraper.URL_STATUS_NONE; 
 		try {
 			// Get all elements that Scraper.ARTIST_PAGE_SONGS_CSS_SELECTOR satisfies.
 			List<WebElement> songDetailsTableRows = driver.findElements(By.cssSelector(Scraper.SONG_PAGE_DETAILS_CSS_SELECTOR));
@@ -235,94 +244,102 @@ public class Scraper implements Runnable {
 					)
 				);
 			// Set status to 1 since song is successfully saved to database.
-			status = 1;
-			captureSongDetails();
-			// Set status to 2 since song details are captured successfully.
-			status = 2;
-			captureSongLyrics();
+			status = Scraper.URL_STATUS_DATABASE;
+			captureElements();
 			// Set status to 3 since all information about song is saved.
-			status = 3;
+			status = Scraper.URL_STATUS_ALL;
 			
 			// Current process status output.
 			System.out.println("completed reading song in page " + activeUrl + "...");
 		} catch (Exception e) {
-			// Log error for maintenance purposes
+			// Log error for maintenance purposes.
 			StringWriter sw = new StringWriter();
 			e.printStackTrace(new PrintWriter(sw));
 			String exceptionDetails = sw.toString();
 			dbhandler.addError(activeUrl, exceptionDetails);
 		} finally {
-			// Set URL status
+			// Set URL status.
 			dbhandler.updateUrl(activeUrl, status); // UPDATE
 		}
 	}
 	
 	/**
-	 * Captures a screenshot of the song details element. 
+	 * Captures a screenshot of the song details group and song lyrics. 
 	 * First, it will capture a full screenshot of the site and then read dimensions 
 	 * and location of the details element. The original screenshot is then cropped to 
 	 * generate the element screenshot.
 	 */
-	public void captureSongDetails() {
-		// Get 
+	public void captureElements() {
+		// Get song details table and lyrics element.
 		WebElement detailsTable = driver.findElement(By.cssSelector(Scraper.SONG_PAGE_DETAILS_GROUP_CSS_SELECTOR));
-		File screenshot = ((TakesScreenshot)driver).getScreenshotAs(OutputType.FILE);
-		try {
-			BufferedImage fullScreenshot = ImageIO.read(screenshot);
-			Point point = detailsTable.getLocation();
-			int width = detailsTable.getSize().getWidth();
-			int height = detailsTable.getSize().getHeight();
-			BufferedImage eleScreenshot= fullScreenshot.getSubimage(point.getX(), point.getY(), width, height);
-			ImageIO.write(eleScreenshot, "png", screenshot);
-			FileUtils.copyFile(screenshot, new File(SystemHandler.DETAILS_FOLDER_PATH + Integer.parseInt(activeUrl.split("=")[1]) + ".png"));
-		} catch (IOException e) {
-			e.printStackTrace(); // TODO
-		}
-	}
-	
-	// Screenshot reference: http://stackoverflow.com/questions/13832322/how-to-capture-the-screenshot-of-only-a-specific-element-using-selenium-webdrive
-public boolean captureSongLyrics() {
 		WebElement lyrics = this.getLyricsElement();
+		
+		// Create File to store cropped image before saving.
 		File screenshot = ((TakesScreenshot)driver).getScreenshotAs(OutputType.FILE);
+		
 		try {
+			// Convert file to a image.
 			BufferedImage fullScreenshot = ImageIO.read(screenshot);
-			Point point = lyrics.getLocation();
-			int width = lyrics.getSize().getWidth();
-			int height = lyrics.getSize().getHeight();
-			BufferedImage eleScreenshot= fullScreenshot.getSubimage(point.getX(), point.getY(), width, height);
-			ImageIO.write(eleScreenshot, "png", screenshot);
-			FileUtils.copyFile(screenshot, new File(SystemHandler.LYRICS_FOLDER_PATH + Integer.parseInt(activeUrl.split("=")[1]) + ".png"));
+		
+			// Get element location and dimensions.
+			Point detailsPoint = detailsTable.getLocation();
+			Point lyricsPoint = lyrics.getLocation();
+			int detailsWidth = detailsTable.getSize().getWidth();
+			int detailsHeight = detailsTable.getSize().getHeight();
+			int lyricsWidth = lyrics.getSize().getWidth();
+			int lyricsHeight = lyrics.getSize().getHeight();
 			
-			return true;
+			// Crop images.
+			BufferedImage detailsScreenshot = fullScreenshot.getSubimage(detailsPoint.getX(), detailsPoint.getY(), detailsWidth, detailsHeight);
+			BufferedImage lyricsScreenshot = fullScreenshot.getSubimage(lyricsPoint.getX(), lyricsPoint.getY(), lyricsWidth, lyricsHeight);
+			
+			// Write cropped images to a file.
+			ImageIO.write(detailsScreenshot, "png", screenshot);
+			FileUtils.copyFile(screenshot, new File(SystemHandler.DETAILS_FOLDER_PATH + Integer.parseInt(activeUrl.split("=")[1]) + ".png"));
+			ImageIO.write(lyricsScreenshot, "png", screenshot);
+			FileUtils.copyFile(screenshot, new File(SystemHandler.LYRICS_FOLDER_PATH + Integer.parseInt(activeUrl.split("=")[1]) + ".png"));
 		} catch (IOException e) {
 			e.printStackTrace(); // TODO
 		}
-		
-		return false;
 	}
 	
+	/**
+	 * Run method to handle this Runnable. 
+	 * Uses a WebDriver borrowed from {@link SystemHandler#browserPool} to visit web pages.
+	 * Also uses a {@link DatabaseHandler} to access database functions. 
+	 * The tasks are assigned by filtering the value of {@link Scraper#activeUrl}.  
+	 * <p>
+	 * @see SystemHandler
+	 * @see DatabaseHandler
+	 */
 	@Override
 	public void run() {
+		// Gets a WebDriver from browser pool.
 		synchronized (SystemHandler.browserPool) {
 			driver = SystemHandler.browserPool.pop();
 		}
 		
-		// driver can be empty if BrowserPool.idlePool is empty
+		// Driver can be empty if BrowserPool.idlePool is empty.
 		if (driver != null) {
 			dbhandler = new DatabaseHandler();
 			
+			// Visit URL.
 			driver.navigate().to(activeUrl);
 			
 			if (activeUrl.contains(SystemHandler.ARTISTS_PAGE)) {
+				// Example URL - http://www.chords-lanka.com/artists.php
 				readAllArtists();
 			} else if(activeUrl.contains(SystemHandler.SEARCH_ARTIST_PAGE)) {
+				// Example URL - http://www.chords-lanka.com/search_artist.php?artist=Sunil%20Edirisinghe
 				readAllSongs();
 			} else if(activeUrl.contains(SystemHandler.SONG_VIEW_PAGE)) {
+				// Example URL - http://http://www.chords-lanka.com/song_view.php?song_id=21
 				readSong();
 			}
 			
 			this.dbhandler.close();
 			
+			// Return WebDriver to the browser pool.
 			synchronized (SystemHandler.browserPool) {
 				SystemHandler.browserPool.push(driver);
 			}
@@ -330,3 +347,27 @@ public boolean captureSongLyrics() {
 	}
 	
 }
+
+// OLD CODE
+
+/*
+ * Captured a screenshot of the lyrics element. 
+ * First, it will capture a full screenshot of the site and then read dimensions 
+ * and location of the lyrics element. The original screenshot is then cropped to 
+ * generate the element screenshot.
+ */
+/*public void captureSongLyrics() {
+	WebElement lyrics = this.getLyricsElement();
+	File screenshot = ((TakesScreenshot)driver).getScreenshotAs(OutputType.FILE);
+	try {
+		BufferedImage fullScreenshot = ImageIO.read(screenshot);
+		Point point = lyrics.getLocation();
+		int width = lyrics.getSize().getWidth();
+		int height = lyrics.getSize().getHeight();
+		BufferedImage eleScreenshot= fullScreenshot.getSubimage(point.getX(), point.getY(), width, height);
+		ImageIO.write(eleScreenshot, "png", screenshot);
+		FileUtils.copyFile(screenshot, new File(SystemHandler.LYRICS_FOLDER_PATH + Integer.parseInt(activeUrl.split("=")[1]) + ".png"));
+	} catch (IOException e) {
+		e.printStackTrace(); // TODO
+	}
+}*/

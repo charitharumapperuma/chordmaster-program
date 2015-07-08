@@ -326,7 +326,7 @@ public class DatabaseHandler {
 		query = "SELECT url FROM url WHERE url.status != ?;";
 		try {
 			statement = connection.prepareStatement(query);
-			statement.setInt(1, 3);
+			statement.setInt(1, Scraper.URL_STATUS_ALL);
 			resultset = statement.executeQuery();
 			while (resultset.next()) {
 				urls.add(resultset.getString("url"));
