@@ -6,7 +6,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-public class SystemHandler {
+public class Worker {
 	/**
 	 * -1 = Testing 
 	 *  0 = From beginning
@@ -37,10 +37,10 @@ public class SystemHandler {
 
 		String url;
 		while (true) {
-			if (this.queue.size() < SystemHandler.MAX_QUEUE_LIMIT) {
-				if (SystemHandler.urlPool.hasNext()) {
-					synchronized (SystemHandler.urlPool) {
-						url = SystemHandler.urlPool.next();
+			if (this.queue.size() < Worker.MAX_QUEUE_LIMIT) {
+				if (Worker.urlPool.hasNext()) {
+					synchronized (Worker.urlPool) {
+						url = Worker.urlPool.next();
 					}
 
 					scraper = new Scraper(url);
@@ -50,7 +50,7 @@ public class SystemHandler {
 
 			// Close the loop if the pool becomes idle for more than specified
 			// time
-			if (SystemHandler.browserPool.isExpired()) {
+			if (Worker.browserPool.isExpired()) {
 				break;
 			}
 		}
@@ -61,10 +61,10 @@ public class SystemHandler {
 
 		String url;
 		while (true) {
-			if (this.queue.size() < SystemHandler.MAX_QUEUE_LIMIT) {
-				if (SystemHandler.urlPool.hasNext()) {
-					synchronized (SystemHandler.urlPool) {
-						url = SystemHandler.urlPool.next();
+			if (this.queue.size() < Worker.MAX_QUEUE_LIMIT) {
+				if (Worker.urlPool.hasNext()) {
+					synchronized (Worker.urlPool) {
+						url = Worker.urlPool.next();
 					}
 
 					validator = new Validator(url);
@@ -74,7 +74,7 @@ public class SystemHandler {
 
 			// Close the loop if the pool becomes idle for more than specified
 			// time
-			if (SystemHandler.browserPool.isExpired()) {
+			if (Worker.browserPool.isExpired()) {
 				break;
 			}
 		}
@@ -83,11 +83,11 @@ public class SystemHandler {
 	// Execution mode -1
 	public void test() {
 		System.out.println("Testing started...");
-		System.out.println("EXECUTION MODE # = " + SystemHandler.EXECUTION_MODE);
+		System.out.println("EXECUTION MODE # = " + Worker.EXECUTION_MODE);
 
 		// Set starting URL for the process
-		synchronized (SystemHandler.urlPool) {
-			SystemHandler.urlPool.add(SystemHandler.TEST_URL);
+		synchronized (Worker.urlPool) {
+			Worker.urlPool.add(Worker.TEST_URL);
 		}
 
 		this.handle();
@@ -99,11 +99,11 @@ public class SystemHandler {
 	public void browseAll() {
 		System.out.println("MainHandler started...");
 		System.out
-				.println("EXECUTION MODE # = " + SystemHandler.EXECUTION_MODE);
+				.println("EXECUTION MODE # = " + Worker.EXECUTION_MODE);
 
 		// Set starting URL for the process
-		synchronized (SystemHandler.urlPool) {
-			SystemHandler.urlPool.add(SystemHandler.ROOT_URL);
+		synchronized (Worker.urlPool) {
+			Worker.urlPool.add(Worker.ROOT_URL);
 		}
 
 		this.handle();
@@ -114,11 +114,11 @@ public class SystemHandler {
 	// Execution mode 1
 	public void browseIncomplete() {
 		System.out.println("MissingPageHandler started...");
-		System.out.println("EXECUTION MODE # = " + SystemHandler.EXECUTION_MODE);
+		System.out.println("EXECUTION MODE # = " + Worker.EXECUTION_MODE);
 
 		// Set starting URL for the process
-		synchronized (SystemHandler.urlPool) {
-			SystemHandler.urlPool.addAll(dbhandler.getIncompleteUrls());
+		synchronized (Worker.urlPool) {
+			Worker.urlPool.addAll(dbhandler.getIncompleteUrls());
 		}
 
 		this.handle();
@@ -129,9 +129,9 @@ public class SystemHandler {
 	// Execution mode 2
 	public void browseErrors() {
 		System.out.println("ErrorHandler started...");
-		System.out.println("EXECUTION MODE # = " + SystemHandler.EXECUTION_MODE);
+		System.out.println("EXECUTION MODE # = " + Worker.EXECUTION_MODE);
 
-		synchronized (SystemHandler.urlPool) {
+		synchronized (Worker.urlPool) {
 			urlPool.addAll(dbhandler.getAllErrorUrls());
 		}
 
@@ -143,9 +143,9 @@ public class SystemHandler {
 	// Execution mode 3
 	public void validateArtist() {
 		System.out.println("Artist Validator started...");
-		System.out.println("EXECUTION MODE # = " + SystemHandler.EXECUTION_MODE);
+		System.out.println("EXECUTION MODE # = " + Worker.EXECUTION_MODE);
 
-		synchronized (SystemHandler.urlPool) {
+		synchronized (Worker.urlPool) {
 			urlPool.add(Validator.ARTISTS_URL);
 		}
 
@@ -157,9 +157,9 @@ public class SystemHandler {
 	// Execution mode 4
 	public void browseByArtists() {
 		System.out.println("BrowseByArtists started...");
-		System.out.println("EXECUTION MODE # = " + SystemHandler.EXECUTION_MODE);
+		System.out.println("EXECUTION MODE # = " + Worker.EXECUTION_MODE);
 
-		synchronized (SystemHandler.urlPool) {
+		synchronized (Worker.urlPool) {
 			urlPool.addAll(dbhandler.getAllArtistUrls());
 		}
 
@@ -169,46 +169,46 @@ public class SystemHandler {
 	}
 	
 	public static void main(String[] args) {
-		System.out.println("SystemHandler started...");
+		System.out.println("Worker started...");
 
 		long startTime = System.currentTimeMillis();
 
-		SystemHandler h = new SystemHandler();
+		Worker worker = new Worker();
 
-		h.dbhandler = new DatabaseHandler();
-		h.queue = new LinkedBlockingQueue<Runnable>();
-		h.executor = new ThreadPoolExecutor(SystemHandler.BROWSER_POOL_SIZE,
-				SystemHandler.BROWSER_POOL_SIZE,
-				SystemHandler.MAX_KEEP_ALIVE_TIME, TimeUnit.MINUTES, h.queue);
+		worker.dbhandler = new DatabaseHandler();
+		worker.queue = new LinkedBlockingQueue<Runnable>();
+		worker.executor = new ThreadPoolExecutor(Worker.BROWSER_POOL_SIZE,
+				Worker.BROWSER_POOL_SIZE,
+				Worker.MAX_KEEP_ALIVE_TIME, TimeUnit.MINUTES, worker.queue);
 
-		SystemHandler.browserPool = new BrowserPool(
-				SystemHandler.BROWSER_POOL_SIZE);
-		SystemHandler.urlPool = new UrlPool();
+		Worker.browserPool = new BrowserPool(
+				Worker.BROWSER_POOL_SIZE);
+		Worker.urlPool = new UrlPool();
 
 		// Handle different processing methods
-		switch (SystemHandler.EXECUTION_MODE) {
+		switch (Worker.EXECUTION_MODE) {
 		case -1:
-			h.test();
+			worker.test();
 			break;
 		case 0:
-			h.browseAll();
+			worker.browseAll();
 			break;
 		case 1:
-			h.browseIncomplete();
+			worker.browseIncomplete();
 			break;
 		case 2:
-			h.browseErrors();
+			worker.browseErrors();
 			break;
 		case 3:
-			h.validateArtist();
+			worker.validateArtist();
 			break;
 		}
 
-		SystemHandler.browserPool.closeAll();
-		h.dbhandler.close();
-		h.executor.shutdown();
+		Worker.browserPool.closeAll();
+		worker.dbhandler.close();
+		worker.executor.shutdown();
 
-		System.out.println("SystemHandler completed...");
+		System.out.println("Worker completed...");
 
 		// log execution time
 		long endTime = System.currentTimeMillis();
@@ -219,4 +219,5 @@ public class SystemHandler {
 		System.out.println("Process ended succesfully in " + minutes
 				+ " minutes, " + seconds + " seconds...");
 	}
+
 }

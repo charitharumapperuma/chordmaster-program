@@ -31,8 +31,8 @@ public class Validator implements Runnable {
 
 	@Override
 	public void run() {
-		synchronized (SystemHandler.browserPool) {
-			driver = SystemHandler.browserPool.pop();
+		synchronized (Worker.browserPool) {
+			driver = Worker.browserPool.pop();
 		}
 		
 		// driver can be empty if BrowserPool.idlePool is empty
@@ -41,18 +41,18 @@ public class Validator implements Runnable {
 			
 			driver.navigate().to(activeUrl);
 			
-			if (activeUrl.contains(SystemHandler.ARTISTS_PAGE)) {
+			if (activeUrl.contains(Worker.ARTISTS_PAGE)) {
 				validateArtists();
-			} else if(activeUrl.contains(SystemHandler.SEARCH_ARTIST_PAGE)) {
+			} else if(activeUrl.contains(Worker.SEARCH_ARTIST_PAGE)) {
 				//readAllSongs();
-			} else if(activeUrl.contains(SystemHandler.SONG_VIEW_PAGE)) {
+			} else if(activeUrl.contains(Worker.SONG_VIEW_PAGE)) {
 				//readSong();
 			}
 			
 			this.dbhandler.close();
 			
-			synchronized (SystemHandler.browserPool) {
-				SystemHandler.browserPool.push(driver);
+			synchronized (Worker.browserPool) {
+				Worker.browserPool.push(driver);
 			}
 		}
 	}

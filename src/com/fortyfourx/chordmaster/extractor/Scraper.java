@@ -122,10 +122,10 @@ public class Scraper implements Runnable {
 	 * Reads all artists from the web page in the URL specified by {@link #activeUrl} field. 
 	 * Uses {@link #ARTISTS_PAGE_ARTISTS_CSS_SELECTOR} to select elements by CSS selector.
 	 * Stores scraped data to <b>DATABASE.ARTIST</b> table.
-	 * Finally, add all URLs to {@link SystemHandler#urlPool}.
+	 * Finally, add all URLs to {@link Worker#urlPool}.
 	 * If exceptions are raised, current time, {@link #activeUrl} and the exception will be stored into <b>DATABASE.ERROR</b> table.
 	 * <p>
-	 * @see SystemHandler
+	 * @see Worker
 	 * @see DatabaseHandler
 	 * @see Artist
 	 */
@@ -143,8 +143,8 @@ public class Scraper implements Runnable {
 					)
 				);
 				// Add new artist's URL to URL pool
-				synchronized (SystemHandler.urlPool) {
-					SystemHandler.urlPool.add(artistAnchor.getAttribute("href"));
+				synchronized (Worker.urlPool) {
+					Worker.urlPool.add(artistAnchor.getAttribute("href"));
 				}
 			}
 		} catch (Exception e) {
@@ -160,7 +160,7 @@ public class Scraper implements Runnable {
 	 * Reads all song URLs from the web page in the URL specified by {@link #activeUrl} field. 
 	 * Uses {@link #ARTIST_PAGE_SONGS_CSS_SELECTOR} to select elements by CSS selector. 
 	 * Stores scraped URL to <b>DATABASE.URL</b> table. 
-	 * Add all URLs that satisfy any of the following conditions to {@link SystemHandler#urlPool}, 
+	 * Add all URLs that satisfy any of the following conditions to {@link Worker#urlPool}, 
 	 * <ul>
 	 * <li>Should not be in the database already.</li>
 	 * <li>If URL is present in the database it should not have status 3.</li>
@@ -169,7 +169,7 @@ public class Scraper implements Runnable {
 	 * <p>
 	 * If exceptions are raised, current time, {@link #activeUrl} and the exception will be stored into <b>DATABASE.ERROR</b> table. 
 	 * <p>
-	 * @see SystemHandler
+	 * @see Worker
 	 * @see DatabaseHandler
 	 * @see Url
 	 */
@@ -185,8 +185,8 @@ public class Scraper implements Runnable {
 				songAnchorUrl = songAnchor.getAttribute("href");
 				if ((dbhandler.getURL(songAnchorUrl) == null) || (dbhandler.getUrlStatus(songAnchorUrl) != 3) || (dbhandler.removeError(songAnchorUrl) != null)) {
 					// If the conditions (see java doc of Scraper.readAllSongs()) are met, add to URL pool
-					synchronized (SystemHandler.urlPool) {
-						SystemHandler.urlPool.add(songAnchor.getAttribute("href"));
+					synchronized (Worker.urlPool) {
+						Worker.urlPool.add(songAnchor.getAttribute("href"));
 					}
 				}
 				// Add to DATABASE.URL table
@@ -210,7 +210,7 @@ public class Scraper implements Runnable {
 	 * <p>
 	 * If exceptions are raised, current time, {@link #activeUrl} and the exception will be stored into <b>DATABASE.ERROR</b> table. 
 	 * <p>
-	 * @see SystemHandler
+	 * @see Worker
 	 * @see DatabaseHandler
 	 * @see Artist
 	 */
@@ -295,9 +295,9 @@ public class Scraper implements Runnable {
 			
 			// Write cropped images to a file.
 			ImageIO.write(detailsScreenshot, "png", screenshot);
-			FileUtils.copyFile(screenshot, new File(SystemHandler.DETAILS_FOLDER_PATH + Integer.parseInt(activeUrl.split("=")[1]) + ".png"));
+			FileUtils.copyFile(screenshot, new File(Worker.DETAILS_FOLDER_PATH + Integer.parseInt(activeUrl.split("=")[1]) + ".png"));
 			ImageIO.write(lyricsScreenshot, "png", screenshot);
-			FileUtils.copyFile(screenshot, new File(SystemHandler.LYRICS_FOLDER_PATH + Integer.parseInt(activeUrl.split("=")[1]) + ".png"));
+			FileUtils.copyFile(screenshot, new File(Worker.LYRICS_FOLDER_PATH + Integer.parseInt(activeUrl.split("=")[1]) + ".png"));
 		} catch (IOException e) {
 			e.printStackTrace(); // TODO
 		}
@@ -305,18 +305,18 @@ public class Scraper implements Runnable {
 	
 	/**
 	 * Run method to handle this Runnable. 
-	 * Uses a WebDriver borrowed from {@link SystemHandler#browserPool} to visit web pages.
+	 * Uses a WebDriver borrowed from {@link Worker#browserPool} to visit web pages.
 	 * Also uses a {@link DatabaseHandler} to access database functions. 
 	 * The tasks are assigned by filtering the value of {@link Scraper#activeUrl}.  
 	 * <p>
-	 * @see SystemHandler
+	 * @see Worker
 	 * @see DatabaseHandler
 	 */
 	@Override
 	public void run() {
 		// Gets a WebDriver from browser pool.
-		synchronized (SystemHandler.browserPool) {
-			driver = SystemHandler.browserPool.pop();
+		synchronized (Worker.browserPool) {
+			driver = Worker.browserPool.pop();
 		}
 		
 		// Driver can be empty if BrowserPool.idlePool is empty.
@@ -326,13 +326,13 @@ public class Scraper implements Runnable {
 			// Visit URL.
 			driver.navigate().to(activeUrl);
 			
-			if (activeUrl.contains(SystemHandler.ARTISTS_PAGE)) {
+			if (activeUrl.contains(Worker.ARTISTS_PAGE)) {
 				// Example URL - http://www.chords-lanka.com/artists.php
 				readAllArtists();
-			} else if(activeUrl.contains(SystemHandler.SEARCH_ARTIST_PAGE)) {
+			} else if(activeUrl.contains(Worker.SEARCH_ARTIST_PAGE)) {
 				// Example URL - http://www.chords-lanka.com/search_artist.php?artist=Sunil%20Edirisinghe
 				readAllSongs();
-			} else if(activeUrl.contains(SystemHandler.SONG_VIEW_PAGE)) {
+			} else if(activeUrl.contains(Worker.SONG_VIEW_PAGE)) {
 				// Example URL - http://http://www.chords-lanka.com/song_view.php?song_id=21
 				readSong();
 			}
@@ -340,8 +340,8 @@ public class Scraper implements Runnable {
 			this.dbhandler.close();
 			
 			// Return WebDriver to the browser pool.
-			synchronized (SystemHandler.browserPool) {
-				SystemHandler.browserPool.push(driver);
+			synchronized (Worker.browserPool) {
+				Worker.browserPool.push(driver);
 			}
 		}
 	}
@@ -366,7 +366,7 @@ public class Scraper implements Runnable {
 		int height = lyrics.getSize().getHeight();
 		BufferedImage eleScreenshot= fullScreenshot.getSubimage(point.getX(), point.getY(), width, height);
 		ImageIO.write(eleScreenshot, "png", screenshot);
-		FileUtils.copyFile(screenshot, new File(SystemHandler.LYRICS_FOLDER_PATH + Integer.parseInt(activeUrl.split("=")[1]) + ".png"));
+		FileUtils.copyFile(screenshot, new File(Worker.LYRICS_FOLDER_PATH + Integer.parseInt(activeUrl.split("=")[1]) + ".png"));
 	} catch (IOException e) {
 		e.printStackTrace(); // TODO
 	}
