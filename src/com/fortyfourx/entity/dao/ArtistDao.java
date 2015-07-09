@@ -44,14 +44,14 @@ public interface ArtistDao {
 	 * <p>
 	 * @return			A {@link List} of {@link Artist} elements.
 	 */
-	public List<String> getAllArtistsUrls();
+	public List<String> getAllArtistUrls();
 	
 	/**
 	 * Returns the count of all artists stored in the database.
 	 * <p>
 	 * @return			An integer value of the count of artists.
 	 */
-	public int 			getAllArtistsCount();
+	public int 			getAllArtistCount();
 	
 	/**
 	 * Stores an artist to the database. Must implement INSERT query for the artist 

@@ -1,12 +1,12 @@
 package com.fortyfourx.entity;
 
-public class Error {
+public class IncompleteSong {
 	private int id;
 	private String timestamp;
 	private String url;
 	private String exception;
 
-	public Error(int id, String timestamp, String url, String exception) {
+	public IncompleteSong(int id, String timestamp, String url, String exception) {
 		this.id = id;
 		this.timestamp = timestamp;
 		this.url = url;

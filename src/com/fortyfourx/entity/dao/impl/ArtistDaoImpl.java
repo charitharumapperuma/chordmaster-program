@@ -73,7 +73,7 @@ public class ArtistDaoImpl implements ArtistDao {
 	}
 
 	@Override
-	public List<String> getAllArtistsUrls() {
+	public List<String> getAllArtistUrls() {
 		query = "SELECT url FROM artist;";
 		List<String> artists = new ArrayList<String>();
 		try {
@@ -90,7 +90,7 @@ public class ArtistDaoImpl implements ArtistDao {
 	}
 
 	@Override
-	public int getAllArtistsCount() {
+	public int getAllArtistCount() {
 		query = "SELECT COUNT(*) FROM artist;";
 		int count;
 		try {
