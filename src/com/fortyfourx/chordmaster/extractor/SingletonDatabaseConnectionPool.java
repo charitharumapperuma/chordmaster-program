@@ -13,15 +13,14 @@ import com.fortyfourx.chordmaster.exception.PooledObjectNotFoundException;
 /**
  * @author Charith Arumapperuma
  * <p>
- * Uses singleton design pattern to implement database connection pool. 
- * Holds methods to create connection pool. 
- * All connections in the pool are execution-ready. 
+ * Uses singleton design pattern to implement database connection pool. Holds methods to create 
+ * connection pool. All connections in the pool are execution-ready. 
  * <p>
- * <i>Singleton Design Pattern - http://crunchify.com/thread-safe-and-a-fast-singleton-implementation-in-java/<i>
+ * <i>Singleton Design Pattern Example - http://crunchify.com/thread-safe-and-a-fast-singleton-implementation-in-java/<i>
  */
 public class SingletonDatabaseConnectionPool {
-	// Database parameters.
-	public static final int		DATABASE_CONNECTION_POOL_SIZE = 10;
+	// DatabaseConnectionPool constants.
+	public static final int		POOL_SIZE 		  = 10;
 	public static final String	DATABASE_DRIVER   = "com.mysql.jdbc.Driver";
 	public static final String	DATABASE_HOST     = "jdbc:mysql://localhost/chordmaster.v2";
 	public static final String	DATABASE_USERNAME = "root";
@@ -35,7 +34,7 @@ public class SingletonDatabaseConnectionPool {
 	private List<Connection> busyPool;
 
 	/**
-	 * Prevents creation of new instances of other objects.
+	 * Prevents creation of new instances from other objects.
 	 * <p>
 	 * @throws ClassNotFoundException
 	 */
@@ -48,7 +47,7 @@ public class SingletonDatabaseConnectionPool {
 		Class.forName(DatabaseHandler.DRIVER);
 		
 		// Loop creating connection objects and storing them in idlePool.
-		for (int i = 0; i < SingletonDatabaseConnectionPool.DATABASE_CONNECTION_POOL_SIZE; i++) {
+		for (int i = 0; i < SingletonDatabaseConnectionPool.POOL_SIZE; i++) {
 			try {
 				// Add a new connection to the idlePool.
 				this.idlePool.add(DriverManager.getConnection(
@@ -64,8 +63,7 @@ public class SingletonDatabaseConnectionPool {
 	}
 
 	/**
-	 * Return the only instance of {@link SingletonDatabaseConnectionPool}
-	 * class.
+	 * Return the only instance of {@link SingletonDatabaseConnectionPool} class.
 	 * <p>
 	 * @return			return already created class instance.
 	 * <p>
@@ -107,7 +105,7 @@ public class SingletonDatabaseConnectionPool {
 	 * If the returned object is not in the busy pool, an exception is thrown. 
 	 * If the idle pool is full, an exception is thrown.
 	 * <p>
-	 * @param conn			The object needed to be returned to the pool.
+	 * @param connection		The object needed to be returned to the pool.
 	 * <p>
 	 * Further processing must be halted when following exceptions are raised.
 	 * @throws PooledObjectNotFoundException	The object is not in the pool.
@@ -119,7 +117,7 @@ public class SingletonDatabaseConnectionPool {
 			throw new PooledObjectNotFoundException("Pooled object not found in SingletonDatabaseConnectionPool.pool.");
 		} else {
 			Connection conn = this.busyPool.remove(objId);
-			if (this.busyPool.size() == SingletonDatabaseConnectionPool.DATABASE_CONNECTION_POOL_SIZE) {
+			if (this.busyPool.size() == SingletonDatabaseConnectionPool.POOL_SIZE) {
 				this.idlePool.add(conn);
 			} else {
 				throw new PoolFullException("SingletonDatabaseConnectionPool.pool is full.");
