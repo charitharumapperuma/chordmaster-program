@@ -6,6 +6,9 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.openqa.selenium.WebDriver;
+
+import com.fortyfourx.chordmaster.exception.PoolBusyException;
 import com.fortyfourx.chordmaster.exception.PoolEmptyException;
 import com.fortyfourx.chordmaster.exception.PoolFullException;
 import com.fortyfourx.chordmaster.exception.PooledObjectNotFoundException;
@@ -124,4 +127,26 @@ public class SingletonDatabaseConnectionPool {
 			}
 		}
 	}
+	
+	/**
+	 * Closes all Connection instances in the pool. It is essential to complete all 
+	 * browser tasks before closing. If all web drivers are not idle, an exception 
+	 * is thrown. 
+	 * @throws PoolBusyException 				There are active pool elements.
+	 * @throws SQLException 					Closing connection caused some exceptions.
+	 */
+	public void closeAll() throws PoolBusyException, SQLException {
+		if (busyPool.isEmpty()) {
+			for (Connection conn : idlePool) {
+				if (conn != null) {
+					if (!conn.isClosed()) {
+						conn.close();
+					}
+				}
+			}
+		} else {
+			throw new PoolBusyException(busyPool.size() + " WebDriver instances are still busy.");
+		}
+	}
+	
 }

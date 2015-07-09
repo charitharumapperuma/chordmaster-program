@@ -11,10 +11,10 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.firefox.FirefoxProfile;
 
+import com.fortyfourx.chordmaster.exception.PoolBusyException;
 import com.fortyfourx.chordmaster.exception.PoolEmptyException;
 import com.fortyfourx.chordmaster.exception.PoolFullException;
 import com.fortyfourx.chordmaster.exception.PooledObjectNotFoundException;
-import com.fortyfourx.chordmaster.extractor.exception.PoolBusyException;
 
 /**
  * @author Charith Arumapperuma
