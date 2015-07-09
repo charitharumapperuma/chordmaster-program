@@ -14,6 +14,7 @@ import org.openqa.selenium.firefox.FirefoxProfile;
 import com.fortyfourx.chordmaster.exception.PoolEmptyException;
 import com.fortyfourx.chordmaster.exception.PoolFullException;
 import com.fortyfourx.chordmaster.exception.PooledObjectNotFoundException;
+import com.fortyfourx.chordmaster.extractor.exception.PoolBusyException;
 
 /**
  * @author Charith Arumapperuma
@@ -137,4 +138,21 @@ public class SingletonWebDriverPool {
 		// Set last activity time to measure pool idle time.
 		this.lastActivityTime = System.currentTimeMillis();
 	}
+	
+	/**
+	 * Closes all WebDriver instances in the pool. It is essential to complete all 
+	 * browser tasks before closing. If all web drivers are not idle, an exception 
+	 * is thrown. 
+	 * @throws PoolBusyException 				There are active pool elements.
+	 */
+	public void closeAll() throws PoolBusyException {
+		if(busyPool.isEmpty()) {
+			for(WebDriver driver:idlePool) {
+				driver.close();
+			}
+		} else {
+			throw new PoolBusyException(busyPool.size() + " WebDriver instances are still busy.");
+		}
+	}
+	
 }
