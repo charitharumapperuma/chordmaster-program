@@ -7,7 +7,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.fortyfourx.entity.NewSong;
-import com.fortyfourx.entity.URL;
 import com.fortyfourx.entity.dao.NewSongDao;
 
 public class NewSongDaoImpl implements NewSongDao {
