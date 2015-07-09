@@ -10,8 +10,17 @@ import com.fortyfourx.chordmaster.exception.PoolEmptyException;
 import com.fortyfourx.chordmaster.exception.PoolFullException;
 import com.fortyfourx.chordmaster.exception.PooledObjectNotFoundException;
 
+/**
+ * @author Charith Arumapperuma
+ * <p>
+ * Uses singleton design pattern to implement database connection pool. 
+ * Holds methods to create connection pool. 
+ * All connections in the pool are execution-ready. 
+ * <p>
+ * <i>Singleton Design Pattern - http://crunchify.com/thread-safe-and-a-fast-singleton-implementation-in-java/<i>
+ */
 public class SingletonDatabaseConnectionPool {
-	// Pool parameters.
+	// Database parameters.
 	public static final int		DATABASE_CONNECTION_POOL_SIZE = 10;
 	public static final String	DATABASE_DRIVER   = "com.mysql.jdbc.Driver";
 	public static final String	DATABASE_HOST     = "jdbc:mysql://localhost/chordmaster.v2";
