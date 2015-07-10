@@ -335,9 +335,10 @@ public class ContentCollector implements Runnable {
 	 */
 	@Override
 	public void run() {
-		// Get a WebDriver from browser pool.
 		try {
+			// Get a WebDriver from browser pool.
 			driver = SingletonWebDriverPool.getInstance().pop();
+			// Get a Connection from connection pool.
 			connection = SingletonDatabaseConnectionPool.getInstance().pop();
 			
 			// Visit URL.

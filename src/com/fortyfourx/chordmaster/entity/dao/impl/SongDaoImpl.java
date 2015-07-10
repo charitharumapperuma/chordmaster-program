@@ -22,6 +22,20 @@ public class SongDaoImpl implements SongDao{
 	}
 	
 	@Override
+	public int getAllSongsCount() {
+		query = "SELECT COUNT(*) FROM song;";
+		try {
+			statement = connection.prepareStatement(query);
+			resultset = statement.executeQuery();
+			resultset.next();
+			return resultset.getInt(1);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return 0;
+	}
+	
+	@Override
 	public Song getSongById(int id) {
 		ArtistDao artistDao = new ArtistDaoImpl(this.connection);
 		
@@ -162,5 +176,4 @@ public class SongDaoImpl implements SongDao{
 		}
 		return null;
 	}
-
 }

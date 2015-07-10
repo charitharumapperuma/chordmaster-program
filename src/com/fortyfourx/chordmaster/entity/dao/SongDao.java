@@ -12,6 +12,11 @@ import com.fortyfourx.chordmaster.entity.Song;
  * {@code DATABASE.SONG} table.
  */
 public interface SongDao {
+	/**
+	 * Returns the total number of songs in the {@code DATABASE.SONG} table.
+	 * @return			Number of songs as integer.
+	 */
+	public int 			getAllSongsCount();
 	
 	/**
 	 * Returns a {@link Song} that is identified by {@code id}. This method must be 
