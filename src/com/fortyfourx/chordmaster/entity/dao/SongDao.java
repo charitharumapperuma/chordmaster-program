@@ -1,9 +1,9 @@
-package com.fortyfourx.entity.dao;
+package com.fortyfourx.chordmaster.entity.dao;
 
 import java.util.List;
 
-import com.fortyfourx.entity.Artist;
-import com.fortyfourx.entity.Song;
+import com.fortyfourx.chordmaster.entity.Artist;
+import com.fortyfourx.chordmaster.entity.Song;
 
 /**
  * @author Charith Arumapperuma

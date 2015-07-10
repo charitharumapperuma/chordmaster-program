@@ -1,4 +1,4 @@
-package com.fortyfourx.entity;
+package com.fortyfourx.chordmaster.entity;
 
 /**
  * @author Charith Arumapperuma Holds information of newly detected songs, which

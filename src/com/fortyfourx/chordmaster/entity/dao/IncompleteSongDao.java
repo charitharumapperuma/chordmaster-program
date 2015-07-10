@@ -1,8 +1,8 @@
-package com.fortyfourx.entity.dao;
+package com.fortyfourx.chordmaster.entity.dao;
 
 import java.util.List;
 
-import com.fortyfourx.entity.IncompleteSong;
+import com.fortyfourx.chordmaster.entity.IncompleteSong;
 
 public interface IncompleteSongDao {
 	public IncompleteSong getIncompleteSong(String url);

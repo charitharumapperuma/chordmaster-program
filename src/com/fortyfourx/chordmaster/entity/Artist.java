@@ -1,4 +1,4 @@
-package com.fortyfourx.entity;
+package com.fortyfourx.chordmaster.entity;
 
 public class Artist {
 	private int id;

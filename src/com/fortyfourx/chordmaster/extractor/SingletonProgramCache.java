@@ -3,8 +3,8 @@ package com.fortyfourx.chordmaster.extractor;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.fortyfourx.entity.Artist;
-import com.fortyfourx.entity.NewSong;
+import com.fortyfourx.chordmaster.entity.Artist;
+import com.fortyfourx.chordmaster.entity.NewSong;
 
 /**
  * @author Charith Arumapperuma

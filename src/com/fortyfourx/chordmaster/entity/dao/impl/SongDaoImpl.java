@@ -1,4 +1,4 @@
-package com.fortyfourx.entity.dao.impl;
+package com.fortyfourx.chordmaster.entity.dao.impl;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -6,9 +6,9 @@ import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.fortyfourx.entity.Artist;
-import com.fortyfourx.entity.Song;
-import com.fortyfourx.entity.dao.SongDao;
+import com.fortyfourx.chordmaster.entity.Artist;
+import com.fortyfourx.chordmaster.entity.Song;
+import com.fortyfourx.chordmaster.entity.dao.SongDao;
 
 public class SongDaoImpl implements SongDao{
 	private Connection connection;

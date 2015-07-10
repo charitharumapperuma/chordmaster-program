@@ -1,4 +1,4 @@
-package com.fortyfourx.entity.dao.impl;
+package com.fortyfourx.chordmaster.entity.dao.impl;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -8,8 +8,8 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import com.fortyfourx.entity.IncompleteSong;
-import com.fortyfourx.entity.dao.IncompleteSongDao;
+import com.fortyfourx.chordmaster.entity.IncompleteSong;
+import com.fortyfourx.chordmaster.entity.dao.IncompleteSongDao;
 
 public class IncompleteSongDaoImpl implements IncompleteSongDao {
 	private Connection connection;

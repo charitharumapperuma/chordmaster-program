@@ -1,4 +1,4 @@
-package com.fortyfourx.entity.dao.impl;
+package com.fortyfourx.chordmaster.entity.dao.impl;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -6,8 +6,8 @@ import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.fortyfourx.entity.NewSong;
-import com.fortyfourx.entity.dao.NewSongDao;
+import com.fortyfourx.chordmaster.entity.NewSong;
+import com.fortyfourx.chordmaster.entity.dao.NewSongDao;
 
 public class NewSongDaoImpl implements NewSongDao {
 	private Connection connection;
