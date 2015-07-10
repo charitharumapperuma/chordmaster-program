@@ -176,9 +176,7 @@ public class ContentCollector implements Runnable {
 					)
 				);
 				// Add new artist's URL to URL pool
-				synchronized (Worker.urlPool) {
-					Worker.urlPool.add(artistAnchor.getAttribute("href"));
-				}
+				SingletonProgramCache.getInstance().addArtistUrl(artistAnchor.getAttribute("href"));
 			}
 		} catch (Exception e) {
 			this.logException(e);
@@ -217,9 +215,7 @@ public class ContentCollector implements Runnable {
 				songAnchorUrl = songAnchor.getAttribute("href");
 				if (newSongDao.getNewSong(songAnchorUrl) == null) {
 					// If the conditions (see java doc of Scraper.readAllSongs()) are met, add to URL pool
-					synchronized (Worker.urlPool) {
-						Worker.urlPool.add(songAnchor.getAttribute("href"));
-					}
+					SingletonProgramCache.getInstance().addArtistUrl(songAnchor.getAttribute("href"));
 				}
 				// Add to DATABASE.SONG_NEW table
 				newSongDao.addNewSong(

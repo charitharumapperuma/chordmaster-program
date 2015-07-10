@@ -39,7 +39,7 @@ public class SingletonProgramCache {
 	 * <p>
 	 * @return			return already created class instance.
 	 */
-	public SingletonProgramCache getInstance() {
+	public static SingletonProgramCache getInstance() {
 		if (instance == null) {
 			synchronized (SingletonDatabaseConnectionPool.class) {
 				if (instance == null) {
