@@ -47,7 +47,7 @@ public class SingletonDatabaseConnectionPool {
 		busyPool = new ArrayList<>();
 		
 		// Try to get the driver.
-		Class.forName(DatabaseHandler.DRIVER);
+		Class.forName(SingletonDatabaseConnectionPool.DATABASE_DRIVER);
 		
 		// Loop creating connection objects and storing them in idlePool.
 		for (int i = 0; i < SingletonDatabaseConnectionPool.POOL_SIZE; i++) {
