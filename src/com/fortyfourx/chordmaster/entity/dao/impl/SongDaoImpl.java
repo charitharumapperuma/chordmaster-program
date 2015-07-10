@@ -8,6 +8,7 @@ import java.util.List;
 
 import com.fortyfourx.chordmaster.entity.Artist;
 import com.fortyfourx.chordmaster.entity.Song;
+import com.fortyfourx.chordmaster.entity.dao.ArtistDao;
 import com.fortyfourx.chordmaster.entity.dao.SongDao;
 
 public class SongDaoImpl implements SongDao{
@@ -22,7 +23,7 @@ public class SongDaoImpl implements SongDao{
 	
 	@Override
 	public Song getSongById(int id) {
-		ArtistDaoImpl artistDao = new ArtistDaoImpl(this.connection);
+		ArtistDao artistDao = new ArtistDaoImpl(this.connection);
 		
 		query = "SELECT * FROM song WHERE song.id = ?;";
 		try {
@@ -48,7 +49,7 @@ public class SongDaoImpl implements SongDao{
 
 	@Override
 	public List<Song> getSongsByTitle(String title) {
-		ArtistDaoImpl artistDao = new ArtistDaoImpl(this.connection);
+		ArtistDao artistDao = new ArtistDaoImpl(this.connection);
 		List<Song> songs = new ArrayList<Song>();
 		
 		query = "SELECT * FROM song WHERE song.title LIKE %?%;";
@@ -77,7 +78,7 @@ public class SongDaoImpl implements SongDao{
 
 	@Override
 	public List<Song> getSongsByArtist(Artist artist) {
-		ArtistDaoImpl artistDao = new ArtistDaoImpl(this.connection);
+		ArtistDao artistDao = new ArtistDaoImpl(this.connection);
 		List<Song> songs = new ArrayList<Song>();
 
 		query = "SELECT * FROM song WHERE song.artist = ?";
@@ -107,7 +108,7 @@ public class SongDaoImpl implements SongDao{
 
 	@Override
 	public List<Song> getAllSongs() {
-		ArtistDaoImpl artistDao = new ArtistDaoImpl(this.connection);
+		ArtistDao artistDao = new ArtistDaoImpl(this.connection);
 		List<Song> songs = new ArrayList<Song>();
 		
 		query = "SELECT * FROM song;";

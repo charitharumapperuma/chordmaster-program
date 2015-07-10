@@ -92,7 +92,7 @@ public class SingletonDatabaseConnectionPool {
 	 * Further processing must be halted when following Exception is raised.
 	 * @throws PoolEmptyException is thrown when there are no idle connections available in the pool. 
 	 */
-	public Connection pop() throws PoolEmptyException {
+	public synchronized Connection pop() throws PoolEmptyException {
 		if (!idlePool.isEmpty()) {
 			Connection conn;
 			conn = this.idlePool.remove(0);
@@ -114,7 +114,7 @@ public class SingletonDatabaseConnectionPool {
 	 * @throws PooledObjectNotFoundException	The object is not in the pool.
 	 * @throws PoolFullException 				The pool is full due to an some program logic error.
 	 */
-	public void push(Connection connection) throws PooledObjectNotFoundException, PoolFullException {
+	public synchronized void push(Connection connection) throws PooledObjectNotFoundException, PoolFullException {
 		int objId = this.busyPool.indexOf(connection);
 		if (objId == -1) {
 			throw new PooledObjectNotFoundException("Pooled object not found in SingletonDatabaseConnectionPool.pool.");
@@ -135,7 +135,7 @@ public class SingletonDatabaseConnectionPool {
 	 * @throws PoolBusyException 				There are active pool elements.
 	 * @throws SQLException 					Closing connection caused some exceptions.
 	 */
-	public void closeAll() throws PoolBusyException, SQLException {
+	public synchronized void closeAll() throws PoolBusyException, SQLException {
 		if (busyPool.isEmpty()) {
 			for (Connection conn : idlePool) {
 				if (conn != null) {

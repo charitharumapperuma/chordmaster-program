@@ -93,7 +93,7 @@ public class SingletonWebDriverPool {
 	 * Further processing must be halted when following Exception is raised.
 	 * @throws PoolEmptyException is thrown when there are no idle connections available in the pool. 
 	 */
-	public WebDriver pop() throws PoolEmptyException {
+	public synchronized WebDriver pop() throws PoolEmptyException {
 		if (!idlePool.isEmpty()) {
 			WebDriver driver;
 			driver = this.idlePool.remove(0);
@@ -119,7 +119,7 @@ public class SingletonWebDriverPool {
 	 * @throws PooledObjectNotFoundException	The object is not in the pool.
 	 * @throws PoolFullException 				The pool is full due to an some program logic error.
 	 */
-	public void push(WebDriver driver) throws PooledObjectNotFoundException, PoolFullException {
+	public synchronized void push(WebDriver driver) throws PooledObjectNotFoundException, PoolFullException {
 		int objId = this.busyPool.indexOf(driver);
 		if (objId == -1) {
 			throw new PooledObjectNotFoundException("Pooled object not found in SingletonWebDriverPool.pool.");
@@ -142,7 +142,7 @@ public class SingletonWebDriverPool {
 	 * is thrown. 
 	 * @throws PoolBusyException 				There are active pool elements.
 	 */
-	public void closeAll() throws PoolBusyException {
+	public synchronized void closeAll() throws PoolBusyException {
 		if(busyPool.isEmpty()) {
 			for(WebDriver driver:idlePool) {
 				driver.close();

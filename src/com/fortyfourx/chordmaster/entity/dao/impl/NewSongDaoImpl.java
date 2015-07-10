@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.fortyfourx.chordmaster.entity.NewSong;
+import com.fortyfourx.chordmaster.entity.dao.ArtistDao;
 import com.fortyfourx.chordmaster.entity.dao.NewSongDao;
 
 public class NewSongDaoImpl implements NewSongDao {
@@ -21,7 +22,7 @@ public class NewSongDaoImpl implements NewSongDao {
 	
 	@Override
 	public NewSong getNewSong(String url) {
-		ArtistDaoImpl artistDao = new ArtistDaoImpl(connection);
+		ArtistDao artistDao = new ArtistDaoImpl(connection);
 		
 		query = "SELECT * FROM song_new WHERE url.url = ?;";
 		try {
@@ -42,7 +43,7 @@ public class NewSongDaoImpl implements NewSongDao {
 
 	@Override
 	public List<NewSong> getAllNewSongs() {
-		ArtistDaoImpl artistDao = new ArtistDaoImpl(connection);
+		ArtistDao artistDao = new ArtistDaoImpl(connection);
 		
 		List<NewSong> newSongs = new ArrayList<NewSong>();
 		query = "SELECT * FROM song_new;";
