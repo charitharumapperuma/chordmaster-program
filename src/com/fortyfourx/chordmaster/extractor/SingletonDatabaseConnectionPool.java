@@ -6,8 +6,6 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.openqa.selenium.WebDriver;
-
 import com.fortyfourx.chordmaster.exception.PoolBusyException;
 import com.fortyfourx.chordmaster.exception.PoolEmptyException;
 import com.fortyfourx.chordmaster.exception.PoolFullException;
@@ -25,7 +23,7 @@ public class SingletonDatabaseConnectionPool {
 	// DatabaseConnectionPool constants.
 	public static final int		POOL_SIZE 		  = 10;
 	public static final String	DATABASE_DRIVER   = "com.mysql.jdbc.Driver";
-	public static final String	DATABASE_HOST     = "jdbc:mysql://localhost/chordmaster.v2";
+	public static final String	DATABASE_HOST     = "jdbc:mysql://localhost/chordmaster";
 	public static final String	DATABASE_USERNAME = "root";
 	public static final String	DATABASE_PASSWORD = "";
 
