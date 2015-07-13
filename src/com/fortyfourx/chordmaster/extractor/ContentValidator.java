@@ -49,11 +49,11 @@ public class ContentValidator implements Runnable {
 			// Visit URL.
 			driver.navigate().to(activeUrl);
 			
-			if (activeUrl.contains(Worker.ARTISTS_PAGE)) {
+			if (activeUrl.contains(ExtractionAgent.ARTISTS_PAGE_IDENTIFIER)) {
 				validateArtists();
-			} else if(activeUrl.contains(Worker.SEARCH_ARTIST_PAGE)) {
+			} else if(activeUrl.contains(ExtractionAgent.SEARCH_ARTIST_PAGE_IDENTIFIER)) {
 				//readAllSongs();
-			} else if(activeUrl.contains(Worker.SONG_VIEW_PAGE)) {
+			} else if(activeUrl.contains(ExtractionAgent.SONG_VIEW_PAGE_IDENTIFIER)) {
 				//readSong();
 			}
 			

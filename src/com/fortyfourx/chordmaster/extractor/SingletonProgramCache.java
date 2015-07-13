@@ -21,14 +21,16 @@ public class SingletonProgramCache {
 	private static SingletonProgramCache instance;
 	
 	// Class properties.
-	private List<String> artistUrls; // Holds all artist urls before checking.
-	private List<String> songUrls; // Holds all song urls before checking.
+	private List<String> commonUrls; // Holds URLs regardless of its type.
+	private List<String> artistUrls; // Holds all artist URLs before checking.
+	private List<String> songUrls; // Holds all song URLs before checking.
 	private List<NewSong> newSongs; // Holds all identified new songs before data collecting.
 
 	/**
 	 * Prevents creation of new instances from other objects.
 	 */
 	private SingletonProgramCache() {
+		commonUrls = new ArrayList<String>();
 		artistUrls = new ArrayList<String>();
 		songUrls = new ArrayList<String>();
 		newSongs = new ArrayList<NewSong>();
@@ -55,7 +57,7 @@ public class SingletonProgramCache {
 	 * Adds one URL to {@link #artistUrls}.
 	 * @param url			URL to be added as a String.
 	 */
-	public void addArtistUrl(String url) {
+	public synchronized void addArtistUrl(String url) {
 		this.artistUrls.add(url);
 	}
 	
@@ -69,10 +71,27 @@ public class SingletonProgramCache {
 	}
 	
 	/**
+	 * Adds one URL to {@link #commonUrls}.
+	 * @param url			URL to be added as a String.
+	 */
+	public synchronized void addCommonUrl(String url) {
+		this.commonUrls.add(url);
+	}
+	
+	/**
+	 * Returns the top most element in {@link #commonUrls} list.
+	 * @return				Next artist URL in the cache as String.
+	 * @throws IndexOutOfBoundsException Requesting new elements must be stopped.
+	 */
+	public synchronized String nextCommonUrl() throws IndexOutOfBoundsException {
+		return this.commonUrls.remove(0);
+	}
+	
+	/**
 	 * Adds one URL to {@link #songUrls}.
 	 * @param url			URL to be added as a String.
 	 */
-	public void addSongUrl(String url) {
+	public synchronized void addSongUrl(String url) {
 		this.songUrls.add(url);
 	}
 
@@ -89,7 +108,7 @@ public class SingletonProgramCache {
 	 * Adds one {@link NewSong} to {@link #songUrls}.
 	 * @param newSong		{@link NewSong} to be added.
 	 */
-	public void addNewSong(NewSong newSong) {
+	public synchronized void addNewSong(NewSong newSong) {
 		this.newSongs.add(newSong);
 	}
 	
@@ -100,5 +119,17 @@ public class SingletonProgramCache {
 	 */
 	public synchronized NewSong nextNewSong() throws IndexOutOfBoundsException {
 		return this.newSongs.remove(0);
+	}
+	
+	/**
+	 * Returns the status of the program cache. True if there are no elements 
+	 * in any of the cached lists.
+	 * @return		true or false depending on the status of cached lists.
+	 */
+	public boolean isEmpty() {
+		if (this.artistUrls.isEmpty() && this.songUrls.isEmpty() && this.newSongs.isEmpty()) {
+			return true;
+		}
+		return false;
 	}
 }

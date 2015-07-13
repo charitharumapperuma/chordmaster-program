@@ -2,6 +2,11 @@ package com.fortyfourx.chordmaster.exception;
 
 public class PoolBusyException extends Exception {
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1172224432339754334L;
+
 	public PoolBusyException() {
 	}
 

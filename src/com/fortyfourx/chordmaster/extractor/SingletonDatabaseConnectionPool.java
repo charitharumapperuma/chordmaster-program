@@ -47,6 +47,9 @@ public class SingletonDatabaseConnectionPool {
 		// Try to get the driver.
 		Class.forName(SingletonDatabaseConnectionPool.DATABASE_DRIVER);
 		
+		// Status output.
+		System.out.println("Creating " + SingletonDatabaseConnectionPool.POOL_SIZE + " database connection(s)...");
+		
 		// Loop creating connection objects and storing them in idlePool.
 		for (int i = 0; i < SingletonDatabaseConnectionPool.POOL_SIZE; i++) {
 			try {
@@ -95,6 +98,10 @@ public class SingletonDatabaseConnectionPool {
 			Connection conn;
 			conn = this.idlePool.remove(0);
 			this.busyPool.add(conn);
+
+			// Status output.
+			System.out.println("Started using connection " + conn.hashCode());
+			
 			return conn;
 		} else {
 			throw new PoolEmptyException("SingletonDatabaseConnectionPool.pool is empty or all Connections are busy.");
@@ -117,9 +124,15 @@ public class SingletonDatabaseConnectionPool {
 		if (objId == -1) {
 			throw new PooledObjectNotFoundException("Pooled object not found in SingletonDatabaseConnectionPool.pool.");
 		} else {
-			Connection conn = this.busyPool.remove(objId);
-			if (this.busyPool.size() == SingletonDatabaseConnectionPool.POOL_SIZE) {
-				this.idlePool.add(conn);
+			// Remove object from busy pool.
+			this.busyPool.remove(objId);
+			
+			// If the idle pool is not full, add the object to idle pool.
+			if (this.idlePool.size() < SingletonDatabaseConnectionPool.POOL_SIZE) {
+				this.idlePool.add(connection);				
+				
+				// Status output.
+				System.out.println("Completed using browser " + connection.hashCode());
 			} else {
 				throw new PoolFullException("SingletonDatabaseConnectionPool.pool is full.");
 			}
@@ -143,7 +156,7 @@ public class SingletonDatabaseConnectionPool {
 				}
 			}
 		} else {
-			throw new PoolBusyException(busyPool.size() + " WebDriver instances are still busy.");
+			throw new PoolBusyException(busyPool.size() + " Connection instance" + (busyPool.size() > 1 ? "s are" : " is") + " still busy.");
 		}
 	}
 	

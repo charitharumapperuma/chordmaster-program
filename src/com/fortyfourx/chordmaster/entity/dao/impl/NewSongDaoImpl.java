@@ -65,7 +65,7 @@ public class NewSongDaoImpl implements NewSongDao {
 	}
 
 	@Override
-	public void addNewSong(NewSong newSong) {
+	public boolean addNewSong(NewSong newSong) {
 		query = "SELECT count(*) FROM song_new WHERE url = ?;";
 		try {
 			statement = connection.prepareStatement(query);
@@ -73,18 +73,40 @@ public class NewSongDaoImpl implements NewSongDao {
 			resultset = statement.executeQuery();
 			resultset.next();
 			if (resultset.getInt(1) == 0) { 
-				query = "INSERT INTO song_new(url) VALUES(?,?);";
+				query = "INSERT INTO song_new(url, artist) VALUES(?,?);";
 				
 				statement = connection.prepareStatement(query);
 				statement.setString(1, newSong.getUrl());
 				statement.setInt(2, newSong.getArtist().getId());
 				statement.executeUpdate();
+				
+				return true;
 			}
 		} catch (Exception e) {
 			e.printStackTrace(); // TODO
 		}
+		return false;
 	}
 
+	@Override
+	public boolean addNewSongIgnoreVisited(NewSong newSong) {
+		query = "SELECT count(*) FROM song WHERE song.url = ?";
+		
+		try {
+			statement = connection.prepareStatement(query);
+			statement.setString(1, newSong.getUrl());
+			resultset = statement.executeQuery();
+			resultset.next();
+			if (resultset.getInt(1) == 0) { 
+				this.addNewSong(newSong);
+				return true;
+			}
+		} catch (Exception e) {
+			e.printStackTrace(); // TODO
+		}
+		return false;
+	}
+	
 	@Override
 	public void removeNewSong(NewSong newSong) {
 		query = "DELETE FROM song_new WHERE url = ?";

@@ -63,15 +63,15 @@ public class ContentCollector implements Runnable {
 	
 	private WebDriver driver;
 	private Connection connection;
-	private String activeUrl;
-
+	private String currentUrl;
+	
 	/**
 	 * {@link ContentCollector} constructor.
 	 * <p>
 	 * @param 	url			The URL to visit.
 	 */
 	public ContentCollector(String url) {
-		this.activeUrl = url;
+		this.currentUrl = url;
 	}
 	
 	/**
@@ -146,26 +146,31 @@ public class ContentCollector implements Runnable {
 		StringWriter sw = new StringWriter();
 		e.printStackTrace(new PrintWriter(sw));
 		String exceptionDetails = sw.toString();
-		incompleteSongDao.addIncompleteSong(new IncompleteSong(-1, null, activeUrl, exceptionDetails));
+		incompleteSongDao.addIncompleteSong(new IncompleteSong(-1, null, currentUrl, exceptionDetails));
 	}
 	
 	/**
-	 * Reads all artists from the web page in the URL specified by {@link #activeUrl} 
+	 * Reads all artists from the web page in the URL specified by {@link #currentUrl} 
 	 * field. Uses {@link #ARTISTS_PAGE_ARTISTS_CSS_SELECTOR} to select elements by 
 	 * CSS selector. Stores scraped data to <b>DATABASE.ARTIST</b> table. Finally, 
 	 * add all URLs to {@link Worker#urlPool}. If exceptions are raised, current 
-	 * time, {@link #activeUrl} and the exception will be stored into <b>DATABASE.ERROR</b> 
+	 * time, {@link #currentUrl} and the exception will be stored into <b>DATABASE.ERROR</b> 
 	 * table.
 	 * <p>
 	 * @see Worker
 	 * @see DatabaseHandler
 	 * @see Artist
 	 */
-	public void readAllArtists() {
+	public void readArtists() {
 		ArtistDao artistDao = new ArtistDaoImpl(connection);
+		
+		// Visit URL.
+		driver.navigate().to(currentUrl);
+		
 		try {
 			// Get all elements that Scraper.ARTISTS_PAGE_ARTISTS_CSS_SELECTOR satisfies.
 			List<WebElement> artistAnchors = driver.findElements(By.cssSelector(ContentCollector.ARTISTS_PAGE_ARTISTS_CSS_SELECTOR));
+			
 			// Loop all elements (<a> tags).
 			for (WebElement artistAnchor : artistAnchors) {
 				// Add new artist to the database
@@ -175,34 +180,46 @@ public class ContentCollector implements Runnable {
 						artistAnchor.getAttribute("href")
 					)
 				);
-				// Add new artist's URL to URL pool
-				SingletonProgramCache.getInstance().addArtistUrl(artistAnchor.getAttribute("href"));
+				
+				// Add new artist's URL to URL pool's common list.
+				SingletonProgramCache.getInstance().addCommonUrl(artistAnchor.getAttribute("href"));
 			}
+			
 		} catch (Exception e) {
 			this.logException(e);
 		}
 	}
 	
 	/**
-	 * Reads all song URLs from the web page in the URL specified by {@link #activeUrl} 
+	 * <b>
+	 * ********************************<br>
+	 * *********** REFINE ************ <br>
+	 * ********************************
+	 * </b>
+	 * <p>
+	 * Reads all song URLs from the web page in the URL specified by {@link #currentUrl} 
 	 * field. Uses {@link #ARTIST_PAGE_SONGS_CSS_SELECTOR} to select elements by CSS 
 	 * selector. Stores scraped URL to <b>DATABASE.URL</b> table. Add all URLs that 
 	 * satisfy any of the following conditions to {@link Worker#urlPool}, 
 	 * <ul>
 	 * <li>Should not be in the database already.</li>
-	 * <li>If URL is present in the database it should not have status 3.</li>
 	 * <li>The URL is present in the errors table.</li>
 	 * </ul>
 	 * <p>
-	 * If exceptions are raised, current time, {@link #activeUrl} and the exception 
+	 * If exceptions are raised, current time, {@link #currentUrl} and the exception 
 	 * will be stored into <b>DATABASE.ERROR</b> table. 
 	 * <p>
 	 * @see Worker
 	 * @see DatabaseHandler
 	 * @see Url
 	 */
-	public void readAllSongs() {
+	public void readSongs() {
 		NewSongDao newSongDao = new NewSongDaoImpl(connection);
+		ArtistDao artistDao = new ArtistDaoImpl(connection);
+
+		// Visit URL.
+		driver.navigate().to(currentUrl);
+		
 		try {
 			String artist = driver.findElement(By.cssSelector(ContentCollector.ARTIST_PAGE_ARTIST_CSS_SELECTOR)).getText().split("\\(")[0].trim();
 			// Get all elements that Scraper.ARTIST_PAGE_SONGS_CSS_SELECTOR satisfies. 
@@ -213,20 +230,27 @@ public class ContentCollector implements Runnable {
 			for (WebElement songAnchor : songAnchors) {
 				// Get URL of each <a> tag
 				songAnchorUrl = songAnchor.getAttribute("href");
-				if (newSongDao.getNewSong(songAnchorUrl) == null) {
-					// If the conditions (see java doc of Scraper.readAllSongs()) are met, add to URL pool
-					SingletonProgramCache.getInstance().addArtistUrl(songAnchor.getAttribute("href"));
-				}
-				// Add to DATABASE.SONG_NEW table
-				newSongDao.addNewSong(
+				
+				
+				// Add to DATABASE.SONG_NEW table. Ignore URL if the URL is already 
+				// visited (exist in neither SONG table nor SONG_NEW table).
+				boolean newSongAdded = newSongDao.addNewSongIgnoreVisited(
 							new NewSong(
 								songAnchor.getAttribute("href"), 
-								new Artist(
-										artist, 
-										activeUrl
+								artistDao.addArtist(
+										new Artist(
+												artist, 
+												currentUrl
+											)
+										)
 									)
-								)
 						);
+				
+				// Add new song's URL to URL pool's common list,if it has not been visited 
+				// before (i.e. Not present in either SONG table or SONG_NEW table).
+				if (newSongAdded) {
+					SingletonProgramCache.getInstance().addCommonUrl(songAnchorUrl);					
+				}
 			}
 		} catch (Exception e) {
 			this.logException(e);
@@ -235,12 +259,12 @@ public class ContentCollector implements Runnable {
 	
 	/**
 	 * Reads song details, lyrics and capture screenshots from the web page in the 
-	 * URL specified by {@link #activeUrl} field. Uses {@link #getLyricsElement()} 
+	 * URL specified by {@link #currentUrl} field. Uses {@link #getLyricsElement()} 
 	 * to select lyrics by CSS selector. Stores scraped URL to <b>DATABASE.SONG</b> 
 	 * table. If there are new artists found in this process, those are added to 
 	 * <b>DATABASE.ARTIST</b> table. 
 	 * <p>
-	 * If exceptions are raised, current time, {@link #activeUrl} and the exception 
+	 * If exceptions are raised, current time, {@link #currentUrl} and the exception 
 	 * will be stored into <b>DATABASE.ERROR</b> table. 
 	 * <p>
 	 * @see Worker
@@ -250,6 +274,13 @@ public class ContentCollector implements Runnable {
 	public void readSong() {
 		SongDao songDao = new SongDaoImpl(connection);
 		ArtistDao artistDao = new ArtistDaoImpl(connection);
+		NewSongDao newSongDao = new NewSongDaoImpl(connection);
+		
+		Artist artist;
+
+		// Visit URL.
+		driver.navigate().to(currentUrl);
+		
 		try {
 			// Get all elements that Scraper.ARTIST_PAGE_SONGS_CSS_SELECTOR satisfies.
 			List<WebElement> songDetailsTableRows = driver.findElements(By.cssSelector(ContentCollector.SONG_PAGE_DETAILS_CSS_SELECTOR));
@@ -257,28 +288,37 @@ public class ContentCollector implements Runnable {
 			WebElement lyrics = this.getLyricsElement();
 			
 			// Current process status output.
-			System.out.println("Reading song in page " + activeUrl + " using browser " + driver.hashCode() + "...");
+			System.out.println("Reading song in page " + currentUrl + " using browser " + driver.hashCode() + "...");
 		
-			// Add new song to the database.
+			// Add artist to the database.
+			artist = artistDao.addArtist(
+						new Artist(
+								songDetailsTableRows.get(0).findElement(By.cssSelector("td:last-child")).getText().split("-")[1].split("\\(")[0].trim(), 
+								songDetailsTableRows.get(0).findElement(By.cssSelector("td:last-child > i > a")).getAttribute("href")
+							)
+						);
+			
+			// Add song to the database;
 			songDao.addSong(
 					new Song(
-						Integer.parseInt(activeUrl.split("=")[1]), 
+						Integer.parseInt(currentUrl.split("=")[1]), 
 						songDetailsTableRows.get(1).findElement(By.cssSelector("td:last-child")).getText().split("-")[1].trim(), 
-						activeUrl, 
+						currentUrl, 
 						lyrics.getAttribute("outerHTML"), 
 						songDetailsTableRows.get(3).findElement(By.cssSelector("td:last-child")).getText().split("-")[1].trim(), 
 						songDetailsTableRows.get(2).findElement(By.cssSelector("td:last-child")).getText().split("-")[1].trim(), 
-						artistDao.addArtist(
-								new Artist(
-									songDetailsTableRows.get(0).findElement(By.cssSelector("td:last-child")).getText().split("-")[1].split("\\(")[0].trim(), 
-									songDetailsTableRows.get(0).findElement(By.cssSelector("td:last-child > i > a")).getAttribute("href")
-								)
-							)
+						artist
 					)
 				);
 			
+			// Take screenshots.
+			this.captureElements();
+			
+			// Remove this song from DATABASE.SONG_NEW table.
+			newSongDao.removeNewSong(new NewSong(currentUrl, artist));
+			
 			// Current process status output.
-			System.out.println("completed reading song in page " + activeUrl + "...");
+			System.out.println("completed reading song in page " + currentUrl + "...");
 		} catch (Exception e) {
 			this.logException(e);
 		}
@@ -316,9 +356,9 @@ public class ContentCollector implements Runnable {
 			
 			// Write cropped images to a file.
 			ImageIO.write(detailsScreenshot, "png", screenshot);
-			FileUtils.copyFile(screenshot, new File(Worker.DETAILS_FOLDER_PATH + Integer.parseInt(activeUrl.split("=")[1]) + ".png"));
+			FileUtils.copyFile(screenshot, new File(ExtractionAgent.DETAILS_DIR_PATH + Integer.parseInt(currentUrl.split("=")[1]) + ".png"));
 			ImageIO.write(lyricsScreenshot, "png", screenshot);
-			FileUtils.copyFile(screenshot, new File(Worker.LYRICS_FOLDER_PATH + Integer.parseInt(activeUrl.split("=")[1]) + ".png"));
+			FileUtils.copyFile(screenshot, new File(ExtractionAgent.LYRICS_DIR_PATH + Integer.parseInt(currentUrl.split("=")[1]) + ".png"));
 		} catch (IOException e) {
 			e.printStackTrace(); // TODO
 		}
@@ -328,7 +368,7 @@ public class ContentCollector implements Runnable {
 	 * Run method to handle this Runnable. Uses a WebDriver borrowed from 
 	 * {@link browserPool} to visit web pages. Also uses a {@link DatabaseHandler} 
 	 * to access database functions. The tasks are assigned by filtering the value 
-	 * of {@link ContentCollector#activeUrl}.  
+	 * of {@link ContentCollector#currentUrl}.  
 	 * <p>
 	 * @see Worker
 	 * @see DatabaseHandler
@@ -338,37 +378,40 @@ public class ContentCollector implements Runnable {
 		try {
 			// Get a WebDriver from browser pool.
 			driver = SingletonWebDriverPool.getInstance().pop();
+			
 			// Get a Connection from connection pool.
 			connection = SingletonDatabaseConnectionPool.getInstance().pop();
 			
-			// Visit URL.
-			driver.navigate().to(activeUrl);
-			
-			if (activeUrl.contains(Worker.ARTISTS_PAGE)) {
+			if (currentUrl.contains(ExtractionAgent.ARTISTS_PAGE_URL)) {
 				// Example URL - http://www.chords-lanka.com/artists.php
-				readAllArtists();
-			} else if(activeUrl.contains(Worker.SEARCH_ARTIST_PAGE)) {
+				this.readArtists();
+			} else if(currentUrl.contains(ExtractionAgent.SEARCH_ARTIST_PAGE_IDENTIFIER)) {
 				// Example URL - http://www.chords-lanka.com/search_artist.php?artist=Sunil%20Edirisinghe
-				readAllSongs();
-			} else if(activeUrl.contains(Worker.SONG_VIEW_PAGE)) {
+				readSongs();
+			} else if(currentUrl.contains(ExtractionAgent.SONG_VIEW_PAGE_IDENTIFIER)) {
 				// Example URL - http://http://www.chords-lanka.com/song_view.php?song_id=21
 				readSong();
 			}
-			
-			// Return database Connection instance.
-			SingletonDatabaseConnectionPool.getInstance().push(this.connection);
-			
-			// Return WebDriver instance.
-			SingletonWebDriverPool.getInstance().push(this.driver);
 			
 		} catch (PoolEmptyException e) {
 			e.printStackTrace();
 		} catch (ClassNotFoundException e) {
 			e.printStackTrace();
-		} catch (PooledObjectNotFoundException e) {
-			e.printStackTrace();
-		} catch (PoolFullException e) {
-			e.printStackTrace();
+		} finally {
+
+			try {
+				// Return database Connection instance.
+				SingletonDatabaseConnectionPool.getInstance().push(this.connection);
+
+				// Return WebDriver instance.
+				SingletonWebDriverPool.getInstance().push(this.driver);
+			} catch (ClassNotFoundException e) {
+				e.printStackTrace();
+			} catch (PooledObjectNotFoundException e) {
+				e.printStackTrace();
+			} catch (PoolFullException e) {
+				e.printStackTrace();
+			}
 		}
 	}
 }

@@ -21,7 +21,7 @@ public class IncompleteSongDaoImpl implements IncompleteSongDao {
 	
 	@Override
 	public IncompleteSong getIncompleteSong(String url) {
-		query = "SELECT * FROM error WHERE error.url = ?;";
+		query = "SELECT * FROM song_incomplete WHERE url = ?;";
 		try {
 			statement = connection.prepareStatement(query);
 			statement.setString(1, url);
@@ -43,7 +43,7 @@ public class IncompleteSongDaoImpl implements IncompleteSongDao {
 	@Override
 	public List<String> getAllIncompleteSongUrls() {
 		List<String> exceptionUrls = new ArrayList<String>();
-		query = "SELECT url FROM incomplete_song;";
+		query = "SELECT url FROM song_incomplete;";
 		try {
 			statement = connection.prepareStatement(query);
 			resultset = statement.executeQuery();
@@ -59,7 +59,7 @@ public class IncompleteSongDaoImpl implements IncompleteSongDao {
 
 	@Override
 	public void addIncompleteSong(IncompleteSong incSong) {
-		query = "INSERT INTO incomplete_song(url, exception) VALUES(?,?);";
+		query = "INSERT INTO song_incomplete(url, exception) VALUES(?,?);";
 		try {
 			statement = connection.prepareStatement(query);
 			statement.setString(1, incSong.getUrl());
@@ -73,7 +73,7 @@ public class IncompleteSongDaoImpl implements IncompleteSongDao {
 	@Override
 	public IncompleteSong removeIncompleteSong(IncompleteSong incSong) {
 		IncompleteSong songError = null;
-		query = "SELECT * FROM incomplete_song WHERE error.url = ?;";
+		query = "SELECT * FROM song_incomplete WHERE error.url = ?;";
 		try {
 			statement = connection.prepareStatement(query);
 			statement.setString(1, incSong.getUrl());

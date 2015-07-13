@@ -23,7 +23,7 @@ import com.fortyfourx.chordmaster.exception.PooledObjectNotFoundException;
  */
 public class SingletonWebDriverPool {
 	// WebDriverPool constants.
-	public static final int		POOL_SIZE 			= 5;
+	public static final int		POOL_SIZE 			= 10;
 	public static final long	TIMEOUT				= 60000;
 	public static final String	FIREFOX_PROFILE_DIR = "C:/Users/Charith Arumapperuma/AppData/Roaming/Mozilla/Firefox/Profiles/285nppoq.default";
 
@@ -50,9 +50,11 @@ public class SingletonWebDriverPool {
 		
 		// Use browser's default profile.
 		profile = new FirefoxProfile(new File(SingletonWebDriverPool.FIREFOX_PROFILE_DIR));
+
+		// Status output.
+		System.out.println("Creating " + SingletonWebDriverPool.POOL_SIZE + " Firefox browser(s)...");
 		
 		// Loop creating web driver objects and storing them in idlePool.
-		System.out.println("Creating " + SingletonWebDriverPool.POOL_SIZE + " Firefox browsers...");
 		for (int i = 0; i < SingletonWebDriverPool.POOL_SIZE; i++) {
 			// Add a new web driver to the idlePool.
 			this.idlePool.add(new FirefoxDriver(profile));
@@ -79,7 +81,7 @@ public class SingletonWebDriverPool {
 		}
 		
 		// Set last activity time to measure pool idle time.
-		instance.lastActivityTime = System.currentTimeMillis();
+		// instance.lastActivityTime = System.currentTimeMillis();
 				
 		return instance;
 	}
@@ -98,6 +100,9 @@ public class SingletonWebDriverPool {
 			WebDriver driver;
 			driver = this.idlePool.remove(0);
 			this.busyPool.add(driver);
+			
+			// Status output.
+			System.out.println("Started using browser " + driver.hashCode());
 			
 			// Set last activity time to measure pool idle time.
 			this.lastActivityTime = System.currentTimeMillis();
@@ -124,12 +129,18 @@ public class SingletonWebDriverPool {
 		if (objId == -1) {
 			throw new PooledObjectNotFoundException("Pooled object not found in SingletonWebDriverPool.pool.");
 		} else {
-			WebDriver drvr = this.busyPool.remove(objId);
-			if (this.busyPool.size() == SingletonWebDriverPool.POOL_SIZE) {
-				this.idlePool.add(drvr);
+			// Remove object from busy pool.
+			this.busyPool.remove(objId);
+			
+			// If the idle pool is not full, add the object to the idle pool.
+			if (this.idlePool.size() < SingletonWebDriverPool.POOL_SIZE) {
+				this.idlePool.add(driver);
+				
+				// Status output.
+				System.out.println("Completed using browser " + driver.hashCode());
 			} else {
-				throw new PoolFullException("SingletonWebDriverPool.pool is full.");
-			}
+				throw new PoolFullException("WebDriverPool is full.");
+			}	
 		}
 		
 		// Set last activity time to measure pool idle time.
@@ -143,13 +154,35 @@ public class SingletonWebDriverPool {
 	 * @throws PoolBusyException 				There are active pool elements.
 	 */
 	public synchronized void closeAll() throws PoolBusyException {
-		if(busyPool.isEmpty()) {
+		if(this.busyPool.isEmpty()) {
 			for(WebDriver driver:idlePool) {
 				driver.close();
 			}
 		} else {
-			throw new PoolBusyException(busyPool.size() + " WebDriver instances are still busy.");
+			throw new PoolBusyException(busyPool.size() + " WebDriver instance" + (busyPool.size() > 1 ? "s are" : " is") + " still busy.");
 		}
 	}
 	
+	/**
+	 * Returns true if all web drivers are in the idle list now. I.e. {@link #busyPool} is empty}.
+	 * @return			true or false depending on the size of busy pool.
+	 */
+	public boolean isIdle() {
+		if(this.busyPool.isEmpty()) {
+			return true;
+		}
+		return false;
+	}
+	
+	/**
+	 * Checks whether the web driver pool has been idle for more than the specified time.
+	 * If timeout is reached, return true. otherwise return false.
+	 * @return			true or false depending on timeout status.
+	 */
+	public boolean isExpired() {
+		if ((System.currentTimeMillis() - this.lastActivityTime) > SingletonWebDriverPool.TIMEOUT) {
+			return true;
+		}
+		return false;
+	}
 }

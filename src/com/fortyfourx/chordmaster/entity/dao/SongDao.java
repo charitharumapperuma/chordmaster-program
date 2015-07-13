@@ -54,7 +54,7 @@ public interface SongDao {
 	 * @return			A {@link List} of {@link Song} instances.
 	 */
 	public List<Song>	getAllSongs();
-	
+
 	/**
 	 * Stores a song to the database. Must implement INSERT query for the song table. 
 	 * Method also checks whether song is already present in the database and if 
@@ -69,4 +69,5 @@ public interface SongDao {
 	 * @return			The same song instance, or updated instance or {@code null}.
 	 */
 	public Song			addSong(Song song);
+
 }

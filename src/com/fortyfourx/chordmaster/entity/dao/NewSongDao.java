@@ -7,6 +7,7 @@ import com.fortyfourx.chordmaster.entity.NewSong;
 public interface NewSongDao {
 	public NewSong getNewSong(String url);
 	public List<NewSong> getAllNewSongs();
-	public void addNewSong(NewSong newSong);
+	public boolean addNewSong(NewSong newSong);
+	public boolean addNewSongIgnoreVisited(NewSong newSong);
 	public void removeNewSong(NewSong newSong);
 }
