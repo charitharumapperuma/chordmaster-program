@@ -1,4 +1,4 @@
-package com.fortyfourx.chordmaster.extractor;
+package com.fortyfourx.chordmaster.pool;
 
 import java.util.ArrayList;
 import java.util.List;
