@@ -9,6 +9,8 @@ import java.util.List;
 
 import com.fortyfourx.chordmaster.entity.Artist;
 import com.fortyfourx.chordmaster.entity.dao.ArtistDao;
+import com.fortyfourx.chordmaster.exception.PoolEmptyException;
+import com.fortyfourx.chordmaster.pool.SingletonDatabaseConnectionPool;
 
 public class ArtistDaoImpl implements ArtistDao {
 	private Connection connection;
@@ -27,7 +29,7 @@ public class ArtistDaoImpl implements ArtistDao {
 		try {
 			statement = connection.prepareStatement(query);
 			statement.setInt(1, id);
-			resultset = statement.executeQuery(query);
+			resultset = statement.executeQuery();
 			if(resultset.next()) {
 				return new Artist(resultset.getInt("id"), resultset.getString("name"), resultset.getString("url"));
 			}
@@ -39,12 +41,12 @@ public class ArtistDaoImpl implements ArtistDao {
 
 	@Override
 	public List<Artist> getArtistsByName(String name) {
-		query = "SELECT * FROM artist WHERE artist.name LIKE %?%;";
+		query = "SELECT * FROM artist WHERE artist.name LIKE ?;";
 		List<Artist> artists = new ArrayList<Artist>();
 		try {
 			statement = connection.prepareStatement(query);
-			statement.setString(0, name);
-			resultset = statement.executeQuery(query);
+			statement.setString(1, "%" + name + "%");
+			resultset = statement.executeQuery();
 			while(resultset.next()) {
 				artists.add(new Artist(resultset.getInt("id"), resultset.getString("name"), resultset.getString("url")));
 			}
@@ -61,7 +63,7 @@ public class ArtistDaoImpl implements ArtistDao {
 		List<Artist> artists = new ArrayList<Artist>();
 		try {
 			statement = connection.prepareStatement(query);
-			resultset = statement.executeQuery(query);
+			resultset = statement.executeQuery();
 			while(resultset.next()) {
 				artists.add(new Artist(resultset.getInt("id"), resultset.getString("name"), resultset.getString("url")));
 			}
@@ -78,7 +80,7 @@ public class ArtistDaoImpl implements ArtistDao {
 		List<String> artists = new ArrayList<String>();
 		try {
 			statement = connection.prepareStatement(query);
-			resultset = statement.executeQuery(query);
+			resultset = statement.executeQuery();
 			while(resultset.next()) {
 				artists.add(resultset.getString("url"));
 			}
@@ -95,7 +97,7 @@ public class ArtistDaoImpl implements ArtistDao {
 		int count;
 		try {
 			statement = connection.prepareStatement(query);
-			resultset = statement.executeQuery(query);
+			resultset = statement.executeQuery();
 			resultset.next();
 			count = resultset.getInt(1);
 			return count;
