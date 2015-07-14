@@ -34,6 +34,9 @@ import com.fortyfourx.chordmaster.entity.dao.impl.SongDaoImpl;
 import com.fortyfourx.chordmaster.exception.PoolEmptyException;
 import com.fortyfourx.chordmaster.exception.PoolFullException;
 import com.fortyfourx.chordmaster.exception.PooledObjectNotFoundException;
+import com.fortyfourx.chordmaster.pool.SingletonDatabaseConnectionPool;
+import com.fortyfourx.chordmaster.pool.SingletonProgramCache;
+import com.fortyfourx.chordmaster.pool.SingletonWebDriverPool;
 
 /**
  * @author Charith Arumapperuma

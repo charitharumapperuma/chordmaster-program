@@ -8,6 +8,9 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 import com.fortyfourx.chordmaster.exception.PoolBusyException;
+import com.fortyfourx.chordmaster.pool.SingletonDatabaseConnectionPool;
+import com.fortyfourx.chordmaster.pool.SingletonProgramCache;
+import com.fortyfourx.chordmaster.pool.SingletonWebDriverPool;
 
 public class ExtractionAgent {
 	public static final int		CORE_POOL_SIZE	= 7;
