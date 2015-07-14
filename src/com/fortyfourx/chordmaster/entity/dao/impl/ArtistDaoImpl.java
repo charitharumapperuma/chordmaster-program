@@ -9,8 +9,6 @@ import java.util.List;
 
 import com.fortyfourx.chordmaster.entity.Artist;
 import com.fortyfourx.chordmaster.entity.dao.ArtistDao;
-import com.fortyfourx.chordmaster.exception.PoolEmptyException;
-import com.fortyfourx.chordmaster.pool.SingletonDatabaseConnectionPool;
 
 public class ArtistDaoImpl implements ArtistDao {
 	private Connection connection;

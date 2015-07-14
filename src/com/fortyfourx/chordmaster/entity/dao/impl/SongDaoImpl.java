@@ -43,7 +43,7 @@ public class SongDaoImpl implements SongDao{
 		try {
 			statement = connection.prepareStatement(query);
 			statement.setInt(1, id);
-			resultset = statement.executeQuery(query);
+			resultset = statement.executeQuery();
 			if(resultset.next()) {
 				return new Song(
 					resultset.getInt("id"), 
@@ -69,8 +69,8 @@ public class SongDaoImpl implements SongDao{
 		query = "SELECT * FROM song WHERE song.title LIKE %?%;";
 		try {
 			statement = connection.prepareStatement(query);
-			statement.setString(0, title);
-			resultset = statement.executeQuery(query);
+			statement.setString(1, title);
+			resultset = statement.executeQuery();
 			while(resultset.next()) {
 				songs.add(new Song(
 						resultset.getInt("id"), 
@@ -127,7 +127,7 @@ public class SongDaoImpl implements SongDao{
 		query = "SELECT * FROM song;";
 		try {
 			statement = connection.prepareStatement(query);
-			resultset = statement.executeQuery(query);
+			resultset = statement.executeQuery();
 			while(resultset.next()) {
 				songs.add(
 					new Song(
