@@ -92,10 +92,9 @@ public class SongDaoImpl implements SongDao{
 
 	@Override
 	public List<Song> getSongsByArtist(Artist artist) {
-		ArtistDao artistDao = new ArtistDaoImpl(this.connection);
 		List<Song> songs = new ArrayList<Song>();
 
-		query = "SELECT * FROM song WHERE song.artist = ?";
+		query = "SELECT * FROM song WHERE song.artist = ?;";
 		try {
 			statement = connection.prepareStatement(query);
 			statement.setInt(1, artist.getId());
@@ -109,7 +108,7 @@ public class SongDaoImpl implements SongDao{
 						resultset.getString("lyrics"), 
 						resultset.getString("keynote"), 
 						resultset.getString("beat"),
-						artistDao.getArtistById(resultset.getInt("artist"))
+						artist
 					)
 				);
 			}
@@ -176,4 +175,5 @@ public class SongDaoImpl implements SongDao{
 		}
 		return null;
 	}
+	
 }

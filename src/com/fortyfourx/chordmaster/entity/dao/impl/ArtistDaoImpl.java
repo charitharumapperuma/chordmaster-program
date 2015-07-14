@@ -22,7 +22,7 @@ public class ArtistDaoImpl implements ArtistDao {
 	
 	@Override
 	public Artist getArtistById(int id) {
-		query = "SELECT * FROM artist WHERE artist.id = ?;";
+		query = "SELECT * FROM artist WHERE id = ?;";
 		
 		try {
 			statement = connection.prepareStatement(query);
