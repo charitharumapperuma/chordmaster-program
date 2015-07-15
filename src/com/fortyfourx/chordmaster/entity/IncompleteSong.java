@@ -1,6 +1,9 @@
 package com.fortyfourx.chordmaster.entity;
 
-public class IncompleteSong {
+import java.io.Serializable;
+
+public class IncompleteSong implements Serializable {
+	private static final long serialVersionUID = 1L;
 	private int id;
 	private String timestamp;
 	private String url;

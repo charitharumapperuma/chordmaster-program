@@ -1,6 +1,9 @@
 package com.fortyfourx.chordmaster.entity;
 
-public class Song {
+import java.io.Serializable;
+
+public class Song implements Serializable {
+	private static final long serialVersionUID = 1L;
 	private int id;
 	private String title;
 	private String url;

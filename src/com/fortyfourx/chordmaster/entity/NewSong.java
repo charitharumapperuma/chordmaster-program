@@ -1,5 +1,7 @@
 package com.fortyfourx.chordmaster.entity;
 
+import java.io.Serializable;
+
 /**
  * @author Charith Arumapperuma Holds information of newly detected songs, which
  *         have not yet visited to collect data that is necessary to convert it
@@ -7,7 +9,8 @@ package com.fortyfourx.chordmaster.entity;
  * @see Song
  * @see Artist
  */
-public class NewSong {
+public class NewSong implements Serializable {
+	private static final long serialVersionUID = 1L;
 	private String url;
 	private Artist artist;
 
