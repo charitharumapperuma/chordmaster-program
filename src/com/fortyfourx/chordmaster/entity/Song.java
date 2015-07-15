@@ -12,6 +12,8 @@ public class Song implements Serializable {
 	private String beat;
 	private Artist artist;
 
+	public Song() {}
+	
 	public Song(int id, String title, String url, String lyrics, String key,
 			String beat, Artist artist) {
 		this.id = id;

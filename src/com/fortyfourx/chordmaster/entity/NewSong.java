@@ -14,6 +14,8 @@ public class NewSong implements Serializable {
 	private String url;
 	private Artist artist;
 
+	public NewSong() {}
+	
 	public NewSong(String url, Artist artist) {
 		this.url = url;
 		this.artist = artist;

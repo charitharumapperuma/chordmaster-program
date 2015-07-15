@@ -8,6 +8,8 @@ public class Artist implements Serializable {
 	private String name;
 	private String url;
 
+	public Artist() {} 
+	
 	public Artist(String name, String url) {
 		this.id= 0;
 		this.name = name;

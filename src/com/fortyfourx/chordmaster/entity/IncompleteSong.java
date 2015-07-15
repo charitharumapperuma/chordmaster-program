@@ -9,6 +9,8 @@ public class IncompleteSong implements Serializable {
 	private String url;
 	private String exception;
 
+	public IncompleteSong() {}
+	
 	public IncompleteSong(int id, String timestamp, String url, String exception) {
 		this.id = id;
 		this.timestamp = timestamp;
