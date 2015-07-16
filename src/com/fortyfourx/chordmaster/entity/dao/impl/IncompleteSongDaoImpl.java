@@ -100,4 +100,27 @@ public class IncompleteSongDaoImpl implements IncompleteSongDao {
 		return null;
 	}
 
+	@Override
+	public List<IncompleteSong> getAllIncompleteSongs() {
+		List<IncompleteSong> incSongs = new ArrayList<>();
+		
+		query = "SELECT * FROM song_incomplete;";
+		try {
+			statement = connection.prepareStatement(query);
+			resultset = statement.executeQuery();
+			while (resultset.next()) {
+				incSongs.add(new IncompleteSong(
+						Integer.parseInt(resultset.getString("id")), 
+						resultset.getString("timestamp"), 
+						resultset.getString("url"), 
+						resultset.getString("exception"))
+					);
+			}
+			return incSongs;
+		} catch (Exception e) {
+			e.printStackTrace(); // TODO
+		}
+		return null;
+	}
+
 }
