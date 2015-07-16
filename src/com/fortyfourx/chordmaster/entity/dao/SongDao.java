@@ -1,6 +1,7 @@
 package com.fortyfourx.chordmaster.entity.dao;
 
 import java.util.List;
+import java.util.Map;
 
 import com.fortyfourx.chordmaster.entity.Artist;
 import com.fortyfourx.chordmaster.entity.Song;
@@ -47,6 +48,13 @@ public interface SongDao {
 	 * @return			A {@link List} of {@link Song} elements.
 	 */
 	public List<Song>	getSongsByArtist(Artist artist);
+	
+	/**
+	 * Returns a {@link Map} of count as Integer per {@link Artist}. The count specifies the 
+	 * amount of songs available by the artist in the key.
+	 * @return			A {@link Map} of {@link Artist}, Integer pairs.
+	 */
+	public Map<Artist, Integer> getAllSongsPerArtist();
 	
 	/**
 	 * Returns all the songs stored in the database as a {@link List} of {@link Song} instances.

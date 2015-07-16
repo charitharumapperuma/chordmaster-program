@@ -4,7 +4,9 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import com.fortyfourx.chordmaster.entity.Artist;
 import com.fortyfourx.chordmaster.entity.Song;
@@ -119,6 +121,28 @@ public class SongDaoImpl implements SongDao{
 		return null;
 	}
 
+	@Override
+	public Map<Artist, Integer> getAllSongsPerArtist() {
+		ArtistDao artistDao = new ArtistDaoImpl(this.connection);
+		Map<Artist, Integer> counts = new HashMap<>();
+		
+		query = "SELECT artist, count(*) as 'count' from song GROUP BY artist;";
+		try {
+			statement = connection.prepareStatement(query);
+			resultset = statement.executeQuery();
+			while(resultset.next()) {
+				counts.put(
+						artistDao.getArtistById(resultset.getInt("artist")),
+						resultset.getInt("count")
+					);
+			}
+			return counts;
+		} catch (Exception e) {
+			e.printStackTrace(); // TODO
+		}
+		return null;
+	}
+	
 	@Override
 	public List<Song> getAllSongs() {
 		ArtistDao artistDao = new ArtistDaoImpl(this.connection);
