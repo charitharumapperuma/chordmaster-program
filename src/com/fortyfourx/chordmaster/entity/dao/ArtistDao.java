@@ -67,4 +67,6 @@ public interface ArtistDao {
 	 * @return			The same artist instance, or updated instance or {@code null}.
 	 */
 	public Artist 		addArtist(Artist artist);
+	
+	public int			getNextUnvalidatedArtistId();
 }

@@ -199,5 +199,63 @@ public class SongDaoImpl implements SongDao{
 		}
 		return null;
 	}
+
+	@Override
+	public int getNextUnvalidatedSongId() {
+		int id;
+
+		query = "SELECT id FROM song WHERE id NOT IN (SELECT song AS id FROM song_validated) LIMIT 1;";
+		try {
+			statement = connection.prepareStatement(query);
+			resultset = statement.executeQuery();
+			if(resultset.next()) {
+				id = resultset.getInt("id");
+				return id;
+			}
+		} catch (Exception e) {
+			e.printStackTrace(); // TODO
+		}
+		return -1;
+	}
+
+	@Override
+	public int[] getAllValidatedSongIds() {
+		query = "SELECT song AS id FROM song_validated;";
+		
+		List<Integer> idList = new ArrayList<Integer>();
+		int[] idArray = null;
+		try {
+			statement = connection.prepareStatement(query);
+			resultset = statement.executeQuery();
+			while(resultset.next()) {
+				idList.add(resultset.getInt("id"));
+			}
+			idArray = new int[idList.size()];
+			for(int i=0; i<idList.size(); i++) {
+				idArray[i] = idList.get(i);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return idArray;
+	}
+
+	@Override
+	public int getAllValidatedSongCount() {
+		int count = 0;
+		
+		query = "SELECT COUNT(*) FROM song_validated;";
+		try {
+			statement = connection.prepareStatement(query);
+			resultset = statement.executeQuery();
+			if(resultset.next()) {
+				count = resultset.getInt(1);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		} 
+		
+		return count;
+	}
 	
 }

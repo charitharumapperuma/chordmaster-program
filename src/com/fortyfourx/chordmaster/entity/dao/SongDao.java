@@ -78,4 +78,7 @@ public interface SongDao {
 	 */
 	public Song			addSong(Song song);
 
+	public int			getNextUnvalidatedSongId();
+	public int[]		getAllValidatedSongIds();
+	public int			getAllValidatedSongCount();
 }

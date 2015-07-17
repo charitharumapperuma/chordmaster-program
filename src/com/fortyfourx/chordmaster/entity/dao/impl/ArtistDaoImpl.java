@@ -132,4 +132,22 @@ public class ArtistDaoImpl implements ArtistDao {
 		return null;
 	}
 
+	@Override
+	public int getNextUnvalidatedArtistId() {
+		query = "SELECT id FROM artist WHERE id NOT IN (SELECT artist AS id FROM artist_validated) LIMIT 1;";
+		
+		int id;
+		try {
+			statement = connection.prepareStatement(query);
+			resultset = statement.executeQuery();
+			if(resultset.next()) {
+				id = resultset.getInt("id");
+				return id;
+			}
+		} catch (Exception e) {
+			e.printStackTrace(); // TODO
+		}
+		return -1;
+	}
+
 }
